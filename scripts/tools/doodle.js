@@ -8,11 +8,12 @@
 function DoodleTool(cxt, preCxt) {
 	DrawingTool.apply(this, arguments);
 }
-
+// Extend DrawingTool.
 DoodleTool.prototype = Object.create(DrawingTool.prototype);
-
+DoodleTool.prototype.constructor = DoodleTool;
 
 /**
+ * @private
  * Draw a round end cap for the doodle.
  * @param {CanvasRenderingContext2D} cxt - The canvas context in which the doodle is being drawn
  * @param {Number} x - The x-coordinate of the cap
@@ -21,77 +22,90 @@ DoodleTool.prototype = Object.create(DrawingTool.prototype);
 DoodleTool.prototype._drawCap = function (cxt, x, y) {
 	cxt.fillStyle = this._lineColor;
 	cxt.beginPath();
-	cxt.arc(x, y, this._lineWidth / 2, 0, 2 * Math.PI, false);
+	cxt.arc(x, y, this._lineWidth / 2, 0, Math.TAU, false);
 	cxt.closePath();
 	cxt.fill();
 };
 
 /**
- * Handle the doodle tool becoming the active tool.
  * @override
+ * Handle the doodle tool becoming the active tool.
  */
 DoodleTool.prototype.activate = function () {
 	DrawingTool.prototype.activate.apply(this);
 	
 	this._preCxt.canvas.style.cursor = DoodleTool.getCursorCSS();
+	
+	toolbar.toolboxes.drawToolOptions.loadPromise.then(function () {
+		toolbar.toolboxes.drawToolOptions.enableOutlineOnly();
+	});
 };
 
 /**
- * Handle a doodle being started by a pointer.
  * @override
+ * Handle a doodle being started by a pointer.
  * @param {Object} pointerState - The pointer coordinates and button
  */
 DoodleTool.prototype.start = function (pointerState) {
 	DrawingTool.prototype.start.apply(this, arguments);
 	
-	if (!localStorage.antiAlias) {
-		this._roundPointerState(pointerState);
-	}
+	this._points = [
+		{
+			x: pointerState.x,
+			y: pointerState.y
+		}
+	];
 	
-	this._lastX = pointerState.x;
-	this._lastY = pointerState.y;
-	
-	// Draw a round end cap at the start of the doodle.
-	this._drawCap(this._preCxt, pointerState.x, pointerState.y);
-	
-	// De-anti-alias.
-	if (!localStorage.antiAlias) {
-		this._deAntiAlias(Utils.colorToRGB(this._lineColor));
-	}
+	this._canvasDirty = true;
 };
 
 /**
- * Update the doodle when the pointer is moved.
  * @override
+ * Update the doodle when the pointer is moved.
  * @param {Object} pointerState - The pointer coordinates
  */
 DoodleTool.prototype.move = function (pointerState) {
 	DrawingTool.prototype.move.apply(this, arguments);
 	
-	if (!localStorage.antiAlias) {
-		this._roundPointerState(pointerState);
-	}
+	this._points.push({
+		x: pointerState.x,
+		y: pointerState.y
+	});
 	
-	// Connect to the existing preview.
-	this._preCxt.lineWidth = this._lineWidth;
-	this._preCxt.strokeStyle = this._lineColor;
-	this._preCxt.beginPath();
-	this._preCxt.moveTo(this._lastX, this._lastY);
-	this._preCxt.lineTo(pointerState.x, pointerState.y);
-	this._preCxt.closePath();
-	this._preCxt.stroke();
+	this._canvasDirty = true;
+};
+
+/**
+ * @override
+ * Update the canvas if necessary.
+ */
+DoodleTool.prototype.update = function () {
+	if (!this._canvasDirty) {
+		return;
+	}
+	DrawingTool.prototype.update.apply(this, arguments);
 	
 	// Force round end caps on the path.
-	this._drawCap(this._preCxt, pointerState.x, pointerState.y);
+	this._drawCap(this._preCxt, this._points[0].x, this._points[0].y);
+	this._drawCap(this._preCxt, this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
 	
-	// De-anti-alias.
-	if (!localStorage.antiAlias) {
+	// Draw the shape.
+	this._preCxt.lineWidth = this._lineWidth;
+	this._preCxt.lineJoin = 'round';
+	this._preCxt.strokeStyle = this._lineColor;
+	this._preCxt.beginPath();
+	this._preCxt.moveTo(this._points[0].x, this._points[0].y);
+	this._points.forEach(function (point) {
+		this._preCxt.lineTo(point.x, point.y);
+	}, this);
+	this._preCxt.stroke();
+	this._preCxt.closePath();
+	
+	if (!settings.get('antiAlias')) {
 		this._deAntiAlias(Utils.colorToRGB(this._lineColor));
 	}
 	
-	// Store the last x and y.
-	this._lastX = pointerState.x;
-	this._lastY = pointerState.y;
+	this._canvasDirty = false;
 };
 
 /**
@@ -99,7 +113,7 @@ DoodleTool.prototype.move = function (pointerState) {
  * @returns {String}
  */
 DoodleTool.getCursorCSS = function () {
-	var size = parseInt(localStorage.lineWidth) * zoomManager.level + 2;
+	var size = parseInt(settings.get('lineWidth')) * zoomManager.level + 2;
 	
 	// Set the cursor size, capped at 128px.
 	cursorCanvas.width = cursorCanvas.height = Math.min(128, size);
@@ -114,8 +128,8 @@ DoodleTool.getCursorCSS = function () {
 	cursorCxt.beginPath();
 	cursorCxt.arc(
 		cursorCanvas.width / 2, cursorCanvas.height / 2,
-		localStorage.lineWidth * zoomManager.level / 2,
-		0, Math.PI * 2, false
+		settings.get('lineWidth') * zoomManager.level / 2,
+		0, Math.TAU, false
 	);
 	cursorCxt.closePath();
 	cursorCxt.stroke();
@@ -125,8 +139,8 @@ DoodleTool.getCursorCSS = function () {
 	cursorCxt.beginPath();
 	cursorCxt.arc(
 		cursorCanvas.width / 2, cursorCanvas.height / 2,
-		localStorage.lineWidth * zoomManager.level / 2,
-		0, Math.PI * 2, false
+		settings.get('lineWidth') * zoomManager.level / 2,
+		0, Math.TAU, false
 	);
 	cursorCxt.closePath();
 	cursorCxt.stroke();

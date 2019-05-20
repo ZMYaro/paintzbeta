@@ -9,11 +9,12 @@ function PencilTool(cxt, preCxt) {
 	DrawingTool.apply(this, arguments);
 	this._imageData = cxt.createImageData(1, 1);
 }
-
+// Extend DrawingTool.
 PencilTool.prototype = Object.create(DrawingTool.prototype);
-
+PencilTool.prototype.constructor = PencilTool;
 
 /**
+ * @private
  * Draw a point to the canvas.
  * @param {Number} x - The x-coordinate of the point
  * @param {Number} y - The y-coordinate of the point
@@ -26,6 +27,7 @@ PencilTool.prototype._drawPoint = function (x, y, cxt) {
 };
 	
 /**
+ * @private
  * Draw a straight line.
  * @param {Number} x1 - The x-coordinate of the start point
  * @param {Number} y1 - The y-coordinate of the start point
@@ -61,8 +63,9 @@ PencilTool.prototype._drawLine = function (x1, y1, x2, y2, cxt) {
 
 
 /**
- * Update the canvas's drawing context with the shape's properties.
  * @override
+ * @private
+ * Update the canvas's drawing context with the shape's properties.
  */
 PencilTool.prototype._prepareCanvas = function () {
 	this._preCxt.lineWidth = this._lineWidth;
@@ -71,16 +74,22 @@ PencilTool.prototype._prepareCanvas = function () {
 };
 
 /**
- * Handle the pencil tool becoming the active tool.
  * @override
+ * Handle the pencil tool becoming the active tool.
  */
 PencilTool.prototype.activate = function () {
+	DrawingTool.prototype.activate.apply(this);
+	
 	this._preCxt.canvas.style.cursor = 'url(images/cursors/pencil.cur), crosshair';
+	
+	toolbar.toolboxes.drawToolOptions.loadPromise.then(function () {
+		toolbar.toolboxes.drawToolOptions.enableOutlineOnly(false);
+	});
 };
 
 /**
- * Handle a doodle being started by a pointer.
  * @override
+ * Handle a doodle being started by a pointer.
  * @param {Object} pointerState - The pointer coordinates and button
  */
 PencilTool.prototype.start = function (pointerState) {
@@ -88,28 +97,56 @@ PencilTool.prototype.start = function (pointerState) {
 	
 	this._roundPointerState(pointerState);
 	
-	this._lastX = pointerState.x;
-	this._lastY = pointerState.y;
+	this._points = [
+		{
+			x: pointerState.x,
+			y: pointerState.y
+		}
+	];
 	
-	// Draw a dot at the start of the doodle.
-	this._prepareCanvas();
-	this._drawPoint(pointerState.x, pointerState.y, this._preCxt);
+	this._canvasDirty = true;
 };
 
 /**
- * Update the doodle when the pointer is moved.
  * @override
+ * Update the doodle when the pointer is moved.
  * @param {Object} pointerState - The pointer coordinates
  */
 PencilTool.prototype.move = function (pointerState) {
 	DrawingTool.prototype.move.apply(this, arguments);
 	
 	this._roundPointerState(pointerState);
-
-	// Connect to the existing preview.
-	this._drawLine(this._lastX, this._lastY, pointerState.x, pointerState.y, this._preCxt);
 	
-	// Store the last x and y.
-	this._lastX = pointerState.x;
-	this._lastY = pointerState.y;
+	this._points.push({
+		x: pointerState.x,
+		y: pointerState.y
+	});
+	
+	this._canvasDirty = true;
+};
+
+/**
+ * @override
+ * Update the canvas if necessary.
+ */
+PencilTool.prototype.update = function () {
+	if (!this._canvasDirty) {
+		return;
+	}
+	DrawingTool.prototype.update.apply(this, arguments);
+	
+	// Draw a dot at the start of the doodle.
+	this._drawPoint(this._points[0].x, this._points[0].y, this._preCxt);
+	
+	// Draw the whole shape.
+	for (var i = 1; i < this._points.length; i++) {
+		this._drawLine(
+			this._points[i - 1].x,
+			this._points[i - 1].y,
+			this._points[i].x,
+			this._points[i].y,
+			this._preCxt);
+	}
+	
+	this._canvasDirty = false;
 };
