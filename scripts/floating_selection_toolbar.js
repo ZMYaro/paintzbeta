@@ -68,11 +68,22 @@ FloatingSelectionToolbar.prototype._setUp = function (contents) {
 	var deleteBtn = this._element.querySelector('#deleteBtn');
 	deleteBtn.addEventListener('click', this._selectionTool.clear.bind(this._selectionTool), false);
 	
+	var cutBtn = this._element.querySelector('#cutBtn');
+	cutBtn.addEventListener('click', this._selectionTool.cut.bind(this._selectionTool), false);
+	
+	var copyBtn = this._element.querySelector('#copyBtn');
+	copyBtn.addEventListener('click', this._selectionTool.copy.bind(this._selectionTool), false);
+	
 	var duplicateBtn = this._element.querySelector('#duplicateBtn');
 	duplicateBtn.addEventListener('click', this._selectionTool.duplicate.bind(this._selectionTool), false);
 	
 	var cropBtn = this._element.querySelector('#cropBtn');
 	cropBtn.addEventListener('click', this._selectionTool.cropToSelection.bind(this._selectionTool), false);
+	
+	if (!navigator.clipboard || !navigator.clipboard.write) {
+		cutBtn.disabled = true;
+		copyBtn.disabled = true;
+	}
 };
 
 /**
