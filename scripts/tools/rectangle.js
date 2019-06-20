@@ -34,10 +34,33 @@ RectangleTool.prototype.start = function (pointerState) {
 RectangleTool.prototype.move = function (pointerState) {
 	ShapeTool.prototype.move.apply(this, arguments);
 	
-	this.x = Math.min(pointerState.x, this.startX),
-	this.y = Math.min(pointerState.y, this.startY),
-	this.width = Math.abs(pointerState.x - this.startX),
+	this.x = Math.min(pointerState.x, this.startX);
+	this.y = Math.min(pointerState.y, this.startY);
+	this.width = Math.abs(pointerState.x - this.startX);
 	this.height = Math.abs(pointerState.y - this.startY);
+	
+	// Perfect square when shift key held.
+	if (pointerState.shiftKey) {
+		if (this.width < this.height) {
+			this.height = this.width;
+			if (this.y === pointerState.y) {
+				this.y = this.startY - this.height;
+			}
+		} else {
+			this.width = this.height;
+			if (this.x === pointerState.x) {
+				this.x = this.startX - this.width;
+			}
+		}
+	}
+	
+	// Draw from center when ctrl key held.
+	if (pointerState.ctrlKey) {
+		this.x = this.startX - this.width;
+		this.y = this.startY - this.height;
+		this.width *= 2;
+		this.height *= 2;
+	}
 	
 	this._canvasDirty = true;
 };
