@@ -114,7 +114,7 @@ function openImage(file) {
 		}
 		dialogs.save._element.fileName.value =
 			dialogs.save._downloadLink.download = fileName;
-		document.title = fileName + ' - PaintZ';
+		document.title = fileName + ' - Paintβ';
 		
 		// Clear the undo and redo stacks.
 		undoStack.clear();
@@ -246,7 +246,7 @@ function postLoadInit() {
 	keyManager.enableAppShortcuts();
 	
 	// Set the title once everything else is ready.
-	document.title = DEFAULT_TITLE + ' - PaintZ';
+	document.title = DEFAULT_TITLE + ' - Paintβ';
 	
 	// Hide the splash screen.
 	document.body.removeChild(document.getElementById('splashScreen'));
