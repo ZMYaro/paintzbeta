@@ -14,7 +14,6 @@ var canvas,
 	cursorCxt,
 	tools,
 	zoomManager,
-	dialogsContainer,
 	settings,
 	clipboard,
 	dialogs = {},
@@ -170,8 +169,36 @@ function initDragDrop() {
 	}, false);
 }
 
+/**
+ * Check whether it is a milestone for a pop-up suggestion.
+ */
+function checkSaveCountMilestone() {
+	var DIALOG_OPEN_DELAY = 2000; // Milliseconds
+	var MILESTONES = {
+		install: 10,
+		coffee: 50
+	};
+	switch (settings.get('saveCount')) {
+		case MILESTONES.install:
+			if (window.chrome && chrome.app && chrome.app.isInstalled) {
+				return;
+			}
+			setTimeout(function() {
+				dialogs.install.open();
+			}, DIALOG_OPEN_DELAY);
+		break;
+		case MILESTONES.coffee:
+			setTimeout(function () {
+				dialogs.coffee.open();
+			}, DIALOG_OPEN_DELAY);
+		break;
+	}
+}
+
 window.addEventListener('load', function () {
-	// Initialize keyboard shortcut dialog.
+	// Initialize dialogs not bound to specific buttons.
+	dialogs.coffee = new CoffeeDialog();
+	dialogs.install = new InstallDialog();
 	dialogs.keyboard = new KeyboardDialog();
 	
 	// Initialize everything.
@@ -184,9 +211,6 @@ window.addEventListener('load', function () {
 	progressSpinner = new ProgressSpinner();
 	
 	initDragDrop();
-	
-	// Get saved reference to the dialogs container.
-	dialogsContainer = document.getElementById('dialogsContainer');
 	
 	// Update the resolution in the bottom bar.
 	document.getElementById('resolution').innerHTML = settings.get('width') + ' &times; ' + settings.get('height') + 'px';
