@@ -6,7 +6,7 @@
  * @param {CanvasRenderingContext2D} preCxt - The canvas context in which drawing previews are shown
  */
 function FreeformSelectionTool(cxt, preCxt) {
-	SelectionTool.apply(this, arguments);
+	SelectionTool.call(this, cxt, preCxt);
 }
 // Extend SelectionTool.
 FreeformSelectionTool.prototype = Object.create(SelectionTool.prototype);
@@ -18,8 +18,9 @@ FreeformSelectionTool.prototype.constructor = FreeformSelectionTool;
  * @param {Object} pointerState - The pointer coordinates and button
  */
 FreeformSelectionTool.prototype.start = function (pointerState) {
-	pointerState.x = Math.round(pointerState.x);
-	pointerState.y = Math.round(pointerState.y);
+	if (!settings.get('antiAlias')) {
+		this._roundPointerState(pointerState);
+	}
 	
 	// Hide the selection toolbar.
 	this._toolbar.hide();
@@ -28,18 +29,9 @@ FreeformSelectionTool.prototype.start = function (pointerState) {
 	// Otherwise, start a new selection.
 	if (this._selection &&
 			Utils.isPointInRect(pointerState.x, pointerState.y,
-				this._selection.minX, this._selection.minY,
+				this._selection.x, this._selection.y,
 				this._selection.width, this._selection.height)) {
-		this._selection.pointerOffset = {
-			x: pointerState.x - this._selection.minX,
-			y: pointerState.y - this._selection.minY
-		};
-		if (pointerState.ctrlKey) {
-			// If the Ctrl key is pressed, save a copy of the selection.
-			this._saveSelection();
-			this._selection.firstMove = false;
-		}
-		this._preCxt.canvas.style.cursor = 'move';
+		SelectionTool.prototype.start.call(this, pointerState);
 	} else {
 		// Save any existing selection.
 		this._saveSelection();
@@ -65,7 +57,7 @@ FreeformSelectionTool.prototype.start = function (pointerState) {
 
 /**
  * @override
- * Update the tool as the cursor moves.
+ * Update the selection region the cursor moves.
  * @param {Object} pointerState - The pointer coordinates
  */
 FreeformSelectionTool.prototype.move = function (pointerState) {
@@ -73,18 +65,15 @@ FreeformSelectionTool.prototype.move = function (pointerState) {
 		return;
 	}
 	
-	pointerState.x = Math.round(pointerState.x);
-	pointerState.y = Math.round(pointerState.y);
-	
-	Utils.clearCanvas(this._preCxt);
+	if (!settings.get('antiAlias')) {
+		this._roundPointerState(pointerState);
+	}
 	
 	// If there is a poinetr offset, move the selection.
 	// If there is no pointer offset, then this must be a new selection.
 	if (this._selection.pointerOffset) {
 		this._selection.x = pointerState.x - this._selection.pointerOffset.x;
 		this._selection.y = pointerState.y - this._selection.pointerOffset.y;
-		this._drawSelectionContent();
-		this._updateSelectionOutline();
 	} else {
 		// Limit the region to the canvas.
 		pointerState.x = Utils.constrainValue(pointerState.x, 0, this._cxt.canvas.width);
@@ -107,7 +96,136 @@ FreeformSelectionTool.prototype.move = function (pointerState) {
 		if (pointerState.y > this._selection.maxY) {
 			this._selection.maxY = pointerState.y;
 		}
-		
-		
 	}
+	
+	this._canvasDirty = true;
+};
+
+/**
+ * @override
+ * Update the canvas if necessary.
+ */
+FreeformSelectionTool.prototype.update = function () {
+	if (!this._canvasDirty) {
+		return;
+	}
+	
+	if (this._selection.pointerOffset) {
+		SelectionTool.prototype.update.call(this);
+	} else {
+		this._preCxt.save();
+		// Draw the outline.
+		this._preCxt.lineWidth = 1;
+		this._preCxt.lineJoin = 'round';
+		this._createSelectionPath(this._preCxt, this._selection.points);
+		this._preCxt.stroke();
+		this._preCxt.closePath();
+		
+		// Create a color-inverted copy of the existing drawing.
+		cursorCxt.save();
+		cursorCanvas.width = this._cxt.canvas.width;
+		cursorCanvas.height = this._cxt.canvas.height;
+		cursorCxt.drawImage(this._cxt.canvas, 0, 0);
+		cursorCxt.globalCompositeOperation = 'difference';
+		cursorCxt.fillStyle = 'white'; // Filling with white with “difference” blending mode inverts colors.
+		cursorCxt.fillRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+		cursorCxt.restore();
+		
+		// Fill in the line with the inverted drawing.
+		this._preCxt.globalCompositeOperation = 'source-in';
+		this._preCxt.drawImage(cursorCanvas, 0, 0);
+		
+		this._preCxt.restore();
+	}
+	
+	this._canvasDirty = false;
+};
+
+/**
+ * @override
+ * Handle the pointer being released.
+ * @param {Object} pointerState - The pointer coordinates
+ */
+FreeformSelectionTool.prototype.end = function (pointerState) {
+	if (!settings.get('antiAlias')) {
+		this._roundPointerState(pointerState);
+	}
+	
+	this.move(pointerState);
+	
+	this._preCxt.canvas.style.cursor = 'crosshair';
+	
+	// If a new selection was created, ensure it is valid.
+	if (!this._selection.pointerOffset) {
+		// If there are < 3 points, the selection is invalid.
+		if (this._selection.points.length < 3) {
+			this.deselectAll();
+			return;
+		}
+		
+		// Update the coordinates to the top-left corner of the selection region.
+		this._selection.startX =
+			this._selection.x = this._selection.minX;
+		this._selection.startY =
+			this._selection.y = this._selection.minY;
+		this._selection.width = this._selection.maxX - this._selection.minX;
+		this._selection.height = this._selection.maxY - this._selection.minY;
+		
+		// If either dimension is zero, the selection is invalid.
+		if (this._selection.width === 0 || this._selection.height === 0) {
+			this.deselectAll();
+			return;
+		}
+		
+		// Save the selected content.
+		var selectedRegionRectContent = this._cxt.getImageData(
+			this._selection.startX, this._selection.startY,
+			this._selection.width, this._selection.height);
+		
+		Utils.clearCanvas(this._preCxt);
+		this._preCxt.save();
+		this._preCxt.putImageData(selectedRegionRectContent, this._selection.startX, this._selection.startY);
+		this._preCxt.globalCompositeOperation = 'destination-in';
+		this._drawSelectionStartCover();
+		this._preCxt.restore();
+		
+		this._selection.content = this._preCxt.getImageData(
+			this._selection.startX, this._selection.startY,
+			this._selection.width, this._selection.height);
+		
+		// Add the outline.
+		this._updateSelectionOutline();
+		document.body.appendChild(this._outline);
+	}
+	
+	// Show the selection toolbar if there is an active selection.
+	if (this._selection) {
+		this._toolbar.show();
+	}
+};
+
+/**
+ * @override
+ * @private
+ * Draw the background color over the selection's starting location.
+ */
+FreeformSelectionTool.prototype._drawSelectionStartCover = function () {
+	this._preCxt.fillStyle = this._selection.fillColor;
+	this._createSelectionPath(this._preCxt, this._selection.points);
+	this._preCxt.closePath();
+	this._preCxt.fill();
+};
+
+/**
+ * @private
+ * Create a path in the canvas using the given points.
+ * @param {CanvasRenderingContext2D} cxt - The canvas context to create the path in
+ * @param {Array<Object>} points - The list of points
+ */
+FreeformSelectionTool.prototype._createSelectionPath = function (cxt, points) {
+	cxt.beginPath();
+	cxt.moveTo(points[0].x, points[0].y);
+	points.forEach(function (point) {
+		cxt.lineTo(point.x, point.y);
+	});	
 };

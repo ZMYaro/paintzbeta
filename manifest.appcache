@@ -1,14 +1,16 @@
 CACHE MANIFEST
-# 2019-06-28, v1
+# 2019-06-20, v1
 index.html
 404.html
 manifest.webapp
 audio/pacman_start.mp3
 images/toolbar_overview.png
+images/cursors/airbrush.cur
 images/cursors/eyedropper.cur
 images/cursors/paint_bucket.cur
 images/cursors/pencil.cur
 images/icons/add_to_home_screen.svg
+images/icons/airbrush.svg
 images/icons/back.svg
 images/icons/bold.svg
 images/icons/brush.svg
@@ -26,6 +28,7 @@ images/icons/fill_only.svg
 images/icons/flip.svg
 images/icons/font_family.svg
 images/icons/font_size.svg
+images/icons/freeform_select.svg
 images/icons/full_screen.svg
 images/icons/github.svg
 images/icons/help.svg
@@ -121,6 +124,7 @@ scripts/toolbar/text_tool_options.js
 scripts/toolbar/toolbar.js
 scripts/toolbar/toolbox.js
 scripts/toolbar/tools.js
+scripts/tools/airbrush.js
 scripts/tools/curve.js
 scripts/tools/doodle.js
 scripts/tools/drawing.js
