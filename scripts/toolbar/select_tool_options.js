@@ -26,7 +26,7 @@ SelectionToolOptionsToolbox.prototype._setUp = function (contents) {
 		if (tools.currentTool !== tools.selection) {
 			tools.switchTool('selection');
 		}
-		// Select the entire canvas.)
+		// Select the entire canvas.
 		tools.currentTool.selectAll(canvas.width, canvas.height);
 	}, false);
 	
