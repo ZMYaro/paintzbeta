@@ -88,20 +88,18 @@ PacMan.prototype.stop = function () {
  * @returns {Boolean}
  */
 PacMan.prototype._isBlocked = function () {
-	this._cxt.fillStyle = settings.get('lineColor');
-	this._cxt.fillRect(this.x - 1, this.y - 1, 3, 3);
-
 	var imageData = this._cxt.getImageData(
 		this.x - (PacMan.RADIUS + PacMan.HITBOX_PADDING + 1),
 		this.y - (PacMan.RADIUS + PacMan.HITBOX_PADDING + 1),
 		(2 * (PacMan.RADIUS + PacMan.HITBOX_PADDING + 1)),
 		(2 * (PacMan.RADIUS + PacMan.HITBOX_PADDING + 1))
 	);
-
+	
+	var lineColor = settings.get('lineColor');
 	var wallColor = {
-		r: imageData.data[(((imageData.height / 2) * imageData.width * 4) + ((imageData.width / 2) * 4))],
-		g: imageData.data[(((imageData.height / 2) * imageData.width * 4) + ((imageData.width / 2) * 4)) + 1],
-		b: imageData.data[(((imageData.height / 2) * imageData.width * 4) + ((imageData.width / 2) * 4)) + 2]
+		r: parseInt(lineColor.substr(1, 2), 16),
+		g: parseInt(lineColor.substr(3, 2), 16),
+		b: parseInt(lineColor.substr(5, 2), 16)
 	};
 
 	this._cxt.fillStyle = settings.get('fillColor');
@@ -239,14 +237,14 @@ PacMan.prototype._update = function () {
 	}
 
 	// Screen wrap.
-	if (this.x < -(PacMan.RADIUS * 2)) {
-		this.x = canvas.width + (PacMan.RADIUS * 2);
-	} else if (this.x > canvas.width + (PacMan.RADIUS * 2)) {
-		this.x = -(PacMan.RADIUS * 2);
-	} else if (this.y < -(PacMan.RADIUS * 2)) {
-		this.y = canvas.height + (PacMan.RADIUS * 2);
-	} else if (this.y > canvas.height + (PacMan.RADIUS * 2)) {
-		this.y = -(PacMan.RADIUS * 2);
+	if (this.x < -PacMan.RADIUS) {
+		this.x = canvas.width + PacMan.RADIUS;
+	} else if (this.x > canvas.width + PacMan.RADIUS) {
+		this.x = -PacMan.RADIUS;
+	} else if (this.y < -PacMan.RADIUS) {
+		this.y = canvas.height + PacMan.RADIUS;
+	} else if (this.y > canvas.height + PacMan.RADIUS) {
+		this.y = -PacMan.RADIUS;
 	}
 
 	// Draw Pac-Man.
