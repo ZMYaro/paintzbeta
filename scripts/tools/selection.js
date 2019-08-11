@@ -11,7 +11,7 @@ function SelectionTool(cxt, preCxt) {
 	this._outline.className = 'floatingRegion';
 	this._outline.style.cursor = 'move';
 	
-	this._toolbar = new FloatingSelectionToolbar(this);
+	this._toolbar = toolbar.toolboxes.floatingSelectionToolbar;
 }
 // Extend Tool.
 SelectionTool.prototype = Object.create(Tool.prototype);
@@ -208,10 +208,12 @@ SelectionTool.prototype.clear = function () {
 		return;
 	}
 	
-	// Draw the selection start cover to the main canvas.
-	Utils.clearCanvas(this._preCxt);
-	this._drawSelectionStartCover();
-	this._cxt.drawImage(this._preCxt.canvas, 0, 0);
+	// Draw the selection start cover to the main canvas if this is not a duplicate.
+	if (this._selection.firstMove) {
+		Utils.clearCanvas(this._preCxt);
+		this._drawSelectionStartCover();
+		this._cxt.drawImage(this._preCxt.canvas, 0, 0);
+	}
 	Utils.clearCanvas(this._preCxt);
 	
 	// Delete the selection.
@@ -275,8 +277,8 @@ SelectionTool.prototype.duplicate = function () {
 	this._saveSelection();
 	
 	// There is no starting region to cover.
-	this._selection.startX = this._preCxt.canvas.width + 10;
-	this._selection.startY = this._preCxt.canvas.height + 10;
+	this._selection.firstMove = false;
+	
 	// Move the selection to (0,0).
 	this._selection.x = 0;
 	this._selection.y = 0;

@@ -7,7 +7,7 @@
 }
 
 body {
-	overscroll-behavior: contain; /* Prevent accidentally triggering pull-to-refresh and bezel-swipe to go back. */
+	overscroll-behavior-y: contain; /* Prevent pull-to-refresh. */
 }
 
 #canvas,
