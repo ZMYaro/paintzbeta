@@ -194,23 +194,17 @@ function initDragDrop() {
 function checkSaveCountMilestone() {
 	var DIALOG_OPEN_DELAY = 2000; // Milliseconds
 	var MILESTONES = {
-		install: 10,
-		coffee: 50
+		'10': 'install',
+		'50': 'coffee',
+		'100': 'rate'
 	};
-	switch (settings.get('saveCount')) {
-		case MILESTONES.install:
-			if (window.chrome && chrome.app && chrome.app.isInstalled) {
-				return;
-			}
-			setTimeout(function() {
-				dialogs.install.open();
-			}, DIALOG_OPEN_DELAY);
-		break;
-		case MILESTONES.coffee:
-			setTimeout(function () {
-				dialogs.coffee.open();
-			}, DIALOG_OPEN_DELAY);
-		break;
+	
+	var saveCount = settings.get('saveCount');
+	
+	if (saveCount in MILESTONES) {
+		setTimeout(function() {
+			dialogs[MILESTONES[saveCount]].open();
+		}, DIALOG_OPEN_DELAY);
 	}
 }
 
@@ -219,6 +213,7 @@ window.addEventListener('load', function () {
 	dialogs.coffee = new CoffeeDialog();
 	dialogs.install = new InstallDialog();
 	dialogs.keyboard = new KeyboardDialog();
+	dialogs.rate = new RateDialog();
 	
 	// Initialize everything.
 	initCanvas();

@@ -7,7 +7,7 @@
 }
 
 body {
-	overscroll-behavior-y: contain; /* Disable pull-to-refresh. */
+	overscroll-behavior-y: contain; /* Prevent pull-to-refresh. */
 }
 
 #canvas,
