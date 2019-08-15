@@ -4,7 +4,7 @@ var keyManager = {
 	_handleKeyDown: function (e) {
 		// Use Command on Mac and iOS devices and Ctrl everywhere else.
 		var ctrlOrCmd = Utils.checkPlatformCtrlKey(e),
-			ctrlOrCmdOnly = ctrlOrCmd && !e.altKey && !e.metaKey && !e.shiftKey,
+			ctrlOrCmdOnly = Utils.checkPlatformCtrlKey(e, true),
 			noModifiers = !Utils.checkModifierKeys(e);
 		
 		switch (e.keyCode) {
