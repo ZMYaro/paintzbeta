@@ -226,8 +226,8 @@ window.addEventListener('load', function () {
 	initDragDrop();
 	
 	// Update the resolution in the bottom bar.
-	document.getElementById('resolution').innerHTML = settings.get('width') + ' &times; ' + settings.get('height') + 'px';
-	
+	document.getElementById('resolution').innerHTML =
+		settings.get('width') + ' &times; ' + settings.get('height') + 'px';
 	
 	// Wait for all the toolbar and dialog content to load.
 	var dialogLoadPromises = Object.values(dialogs).map(function (dialog) { return dialog.loadPromise; }),
