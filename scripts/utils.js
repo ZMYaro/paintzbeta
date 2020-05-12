@@ -92,6 +92,59 @@ var Utils = {
 	},
 	
 	/**
+	 * Draw a grid on a canvas with the specified spacing.
+	 * @param {Number} size - The size of each grid square, in pixels
+	 * @param {CanvasRenderingContext2D} cxt - The rendering context of the canvas to draw to
+	 */
+	drawGrid: function (size, cxt) {
+		var COLOR_DARK = 'rgba(0, 0, 0, 0.5)',
+			COLOR_LIGHT = 'rgba(255, 255, 255, 0.2275)';
+		
+		cxt.save();
+		
+		cxt.setLineDash([1, 1]);
+		
+		// Canvas centers the line on the coordinate, so 0.5px centers a 1px line on the pixel.
+		for (var x = 0; x < cxt.canvas.width; x += size) {
+			var currentX = Math.floor(x) + 0.5;
+			cxt.lineDashOffset = 0;
+			cxt.strokeStyle = COLOR_DARK;
+			Utils.drawLine(currentX, 0, currentX, cxt.canvas.height, cxt);
+			cxt.lineDashOffset = 1;
+			cxt.strokeStyle = COLOR_LIGHT;
+			Utils.drawLine(currentX, 0, currentX, cxt.canvas.height, cxt);
+		}
+		
+		for (var y = 0.5; y < cxt.canvas.height; y += size) {
+			var currentY = Math.floor(y) + 0.5;
+			cxt.lineDashOffset = 0;
+			cxt.strokeStyle = COLOR_DARK;
+			Utils.drawLine(0, currentY, cxt.canvas.width, currentY, cxt);
+			cxt.lineDashOffset = 1;
+			cxt.strokeStyle = COLOR_LIGHT;
+			Utils.drawLine(0, currentY, cxt.canvas.width, currentY, cxt);
+		}
+		
+		cxt.restore();
+	},
+	
+	/**
+	 * Draw a line on a canvas between two points.
+	 * @param {Number} x1 - The x-coordinate of the start point
+	 * @param {Number} y1 - The y-coordinate of the start point
+	 * @param {Number} x2 - The x-coordinate of the end point
+	 * @param {Number} y2 - The y-coordinate of the end point
+	 * @param {CanvasRenderingContext2D} cxt - The rendering context of the canvas to draw to
+	 */
+	drawLine: function (x1, y1, x2, y2, cxt) {
+		cxt.beginPath();
+		cxt.moveTo(x1, y1);
+		cxt.lineTo(x2, y2);
+		cxt.stroke();
+		cxt.closePath();
+	},
+	
+	/**
 	 * Get the x-coordinate of a click within the canvas.
 	 * @param {Number} pageX - The x-coordinate relative to the page
 	 * @returns {Number}

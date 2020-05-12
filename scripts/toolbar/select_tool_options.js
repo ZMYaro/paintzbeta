@@ -3,9 +3,10 @@
 /**
  * @class
  * Create a new SelectionToolOptionsToolbox instance.
+ * @param {HTMLElement} [toolbar] - The toolbar the toolbox is to be added to
  */
-function SelectionToolOptionsToolbox() {
-	Toolbox.call(this, 'select_tool_options');
+function SelectionToolOptionsToolbox(toolbar) {
+	Toolbox.call(this, 'select_tool_options', toolbar);
 }
 // Extend Toolbox.
 SelectionToolOptionsToolbox.prototype = Object.create(Toolbox.prototype);

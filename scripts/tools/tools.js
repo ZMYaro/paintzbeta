@@ -114,9 +114,7 @@ ToolManager.prototype._handlePointerMove = function (e) {
 		intX = Math.floor(adjustedX),
 		intY = Math.floor(adjustedY);
 	
-	document.getElementById('pointerCoordinates').innerHTML =
-		(intX === Utils.constrainValue(intX, 0, canvas.width - 1) && intY === Utils.constrainValue(intY, 0, canvas.height - 1)) ?
-			intX + ', ' + intY + 'px' : '';
+	toolbar.toolboxes.dimensions.updatePointerCoords(intX, intY);
 	
 	// Do not continue drawing if not started.
 	if (this._state !== this.STATE_ACTIVE) {

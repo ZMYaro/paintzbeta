@@ -8,9 +8,11 @@ var PNG_REGEX = (/.+\.png$/i),
 
 var canvas,
 	preCanvas,
+	gridCanvas,
 	cursorCanvas,
 	cxt,
 	preCxt,
+	gridCxt,
 	cursorCxt,
 	tools,
 	zoomManager,
@@ -30,6 +32,9 @@ function initCanvas() {
 	// Get the preview canvas.
 	preCanvas = document.getElementById('preCanvas');
 	preCxt = preCanvas.getContext('2d');
+	// Get the grid canvas.
+	gridCanvas = document.getElementById('gridCanvas');
+	gridCxt = gridCanvas.getContext('2d');
 	// Get the cursor canvas.
 	cursorCanvas = document.getElementById('cursorCanvas');
 	cursorCxt = cursorCanvas.getContext('2d');
@@ -217,17 +222,13 @@ window.addEventListener('load', function () {
 	
 	// Initialize everything.
 	initCanvas();
+	zoomManager = new ZoomManager();
 	settings = new SettingsManager();
 	clipboard = new ClipboardManager();
-	zoomManager = new ZoomManager();
 	toolbar = new ToolbarManager();
 	tools = new ToolManager();
 	progressSpinner = new ProgressSpinner();
 	initDragDrop();
-	
-	// Update the resolution in the bottom bar.
-	document.getElementById('resolution').innerHTML =
-		settings.get('width') + ' &times; ' + settings.get('height') + 'px';
 	
 	// Wait for all the toolbar and dialog content to load.
 	var dialogLoadPromises = Object.values(dialogs).map(function (dialog) { return dialog.loadPromise; }),
