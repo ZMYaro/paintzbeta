@@ -32,6 +32,9 @@
 	#toolbar button,
 	#toolbar [role="button"] {
 		margin: 4px;
+		
+		transition-property: margin;
+		transition-duration: 0.2s;
 	}
 		#toolbar button svg,
 		#toolbar [role="button"] svg {
@@ -89,6 +92,14 @@
 #outlineOptions input[type="radio"] + label,
 #textFormatOptions input[type="checkbox"] + label {
 	margin-left: 1px;
+	margin-right: 1px;
+}
+#selectOptions button:nth-of-type(2n),
+#selectOptions [role="button"]:nth-of-type(2n) {
+	margin-left: 1px;
+}
+#selectOptions button:nth-of-type(2n + 1),
+#selectOptions [role="button"]:nth-of-type(2n + 1) {
 	margin-right: 1px;
 }
 
