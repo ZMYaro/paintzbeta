@@ -4,7 +4,8 @@
 var PNG_REGEX = (/.+\.png$/i),
 	JPEG_REGEX = (/.+\.(jpg|jpeg|jpe|jif|jfif|jfi)$/i),
 	FILE_EXT_REGEX = (/\.[a-z0-9]{1,4}$/i),
-	DEFAULT_TITLE = 'untitled.png';
+	DEFAULT_TITLE = 'untitled.png',
+	PAGE_TITLE_SUFFIX = ' - Paintβ';
 
 var canvas,
 	preCanvas,
@@ -14,6 +15,7 @@ var canvas,
 	preCxt,
 	gridCxt,
 	cursorCxt,
+	keyManager,
 	tools,
 	zoomManager,
 	settings,
@@ -138,7 +140,7 @@ function openImage(file) {
 		}
 		dialogs.save._element.fileName.value =
 			dialogs.save._downloadLink.download = fileName;
-		document.title = fileName + ' - Paintβ';
+		document.title = fileName + PAGE_TITLE_SUFFIX;
 		
 		// Clear the undo and redo stacks.
 		undoStack.clear();
@@ -222,6 +224,7 @@ window.addEventListener('load', function () {
 	
 	// Initialize everything.
 	initCanvas();
+	keyManager = new KeyManager();
 	zoomManager = new ZoomManager();
 	settings = new SettingsManager();
 	clipboard = new ClipboardManager();
@@ -257,10 +260,13 @@ function postLoadInit() {
 	undoStack.addState();
 	
 	// Enable keyboard shortcuts.
-	keyManager.enableAppShortcuts();
+	keyManager.enabled = true;
+	
+	// Enable clipboard actions.
+	clipboard.enabled = true;
 	
 	// Set the title once everything else is ready.
-	document.title = DEFAULT_TITLE + ' - Paintβ';
+	document.title = DEFAULT_TITLE + PAGE_TITLE_SUFFIX;
 	
 	// Hide the splash screen.
 	document.body.removeChild(document.getElementById('splashScreen'));
