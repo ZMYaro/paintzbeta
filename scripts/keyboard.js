@@ -108,6 +108,15 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			}
 			break;
 		
+		case 48: // 0
+		case 96: // Numpad 0
+			if (ctrlOrCmd && e.altKey && !metaOrControl && !e.shiftKey) {
+				e.preventDefault();
+				// Ctrl+Alt+0 => Zoom 100%
+				zoomManager.level = 1;
+			}
+			break;
+		
 		case 53: // 5
 			if (e.altKey && e.shiftKey && !e.ctrlKey && !metaOrControl) {
 				e.preventDefault();
@@ -339,7 +348,8 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 187: // =/+
-			if (ctrlOrCmd && e.altKey && !metaOrControl && !e.shiftKey) {
+		case 107: // Numpad +
+			if (ctrlOrCmd && e.altKey && !metaOrControl) {
 				e.preventDefault();
 				// Ctrl+Alt+= => Zoom in
 				zoomManager.zoomIn();
@@ -347,6 +357,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 189: // -/_
+		case 109: // Numpad -
 			if (ctrlOrCmd && e.altKey && !metaOrControl && !e.shiftKey) {
 				e.preventDefault();
 				// Ctrl+Alt+- => Zoom out
