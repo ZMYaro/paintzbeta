@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="manifest.appcache">
+<html>
 	<head>
 		<!-- Google Analytics -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-125332101-3"></script>
@@ -17,6 +17,23 @@
 			var CANONICAL_HOST = "beta.paintz.app";
 			if (CANONICAL_HOST === window.location.host && window.location.protocol !== 'https:') {
 				window.location.protocol = 'https';
+			}
+			
+			// Set up caching.
+			if (!!navigator.serviceWorker) {
+				navigator.serviceWorker.register('service_worker.js').then(function (registration) {
+					console.log('Registered service worker with scope:', registration.scope);
+				});
+			} else {
+				// If service worker is unavailable, fall back to app cache.
+				document.addEventListener('DOMContentLoaded', function () {
+					var appCacheIFrame = document.createElement('iframe');
+					appCacheIFrame.src = 'app_cacher.html';
+					appCacheIFrame.style.position = 'absolute';
+					appCacheIFrame.style.width = '1px';
+					appCacheIFrame.style.height = '1px';
+					document.body.appendChild(appCacheIFrame);
+				});
 			}
 		</script>
 		
@@ -111,6 +128,7 @@
 		<script type="text/javascript" src="scripts/toolbar/toolbar.js" defer="defer"></script>
 		
 		<!-- Drawing tools -->
+		<script type="text/javascript" src="scripts/floating_region.js" defer="defer"></script>
 		<script type="text/javascript" src="scripts/tools/tool.js" defer="defer"></script>
 		<script type="text/javascript" src="scripts/tools/drawing.js" defer="defer"></script>
 		<script type="text/javascript" src="scripts/tools/shape.js" defer="defer"></script>
