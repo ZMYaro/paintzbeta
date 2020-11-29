@@ -26,13 +26,9 @@ FreeformSelectionTool.prototype.start = function (pointerState) {
 	// If a selection exists and the pointer is inside it, drag the selection.
 	// Otherwise, start a new selection.
 	if (this._selection &&
-			Utils.isPointInRect(
-				pointerState.x,
-				pointerState.y,
-				this._selection.x - FloatingRegion.GRABBABLE_MARGIN,
-				this._selection.y - FloatingRegion.GRABBABLE_MARGIN,
-				this._selection.width + (2 * FloatingRegion.GRABBABLE_MARGIN),
-				this._selection.height + (2 * FloatingRegion.GRABBABLE_MARGIN))) {
+			Utils.isPointInRect(pointerState.x, pointerState.y,
+				this._selection.x, this._selection.y,
+				this._selection.width, this._selection.height)) {
 		SelectionTool.prototype.start.call(this, pointerState);
 	} else {
 		// Save any existing selection.
@@ -192,7 +188,7 @@ FreeformSelectionTool.prototype.end = function (pointerState) {
 		
 		// Add the outline.
 		this._updateSelectionOutline();
-		this._outline.addToDOM();
+		document.body.appendChild(this._outline);
 	}
 	
 	// Show the selection toolbar if there is an active selection.

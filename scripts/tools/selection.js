@@ -7,7 +7,9 @@
  */
 function SelectionTool(cxt, preCxt) {
 	Tool.apply(this, arguments);
-	this._outline = new FloatingRegion();
+	this._outline = document.createElement('div');
+	this._outline.className = 'floatingRegion';
+	this._outline.style.cursor = 'move';
 	
 	this._toolbar = toolbar.toolboxes.floatingSelectionToolbar;
 }
@@ -39,13 +41,9 @@ SelectionTool.prototype.start = function (pointerState) {
 	// If a selection exists and the pointer is inside it, drag the selection.
 	// Otherwise, start a new selection.
 	if (this._selection &&
-			Utils.isPointInRect(
-				pointerState.x,
-				pointerState.y,
-				this._selection.x - FloatingRegion.GRABBABLE_MARGIN,
-				this._selection.y - FloatingRegion.GRABBABLE_MARGIN,
-				this._selection.width + (2 * FloatingRegion.GRABBABLE_MARGIN),
-				this._selection.height + (2 * FloatingRegion.GRABBABLE_MARGIN))) {
+			Utils.isPointInRect(pointerState.x, pointerState.y,
+				this._selection.x, this._selection.y,
+				this._selection.width, this._selection.height)) {
 		this._selection.pointerOffset = {
 			x: pointerState.x - this._selection.x,
 			y: pointerState.y - this._selection.y
@@ -75,7 +73,7 @@ SelectionTool.prototype.start = function (pointerState) {
 			transformed: false
 		};
 		this._updateSelectionOutline();
-		this._outline.addToDOM();
+		document.body.appendChild(this._outline);
 	}
 };
 
@@ -221,7 +219,7 @@ SelectionTool.prototype.clear = function () {
 	
 	// Delete the selection.
 	this._toolbar.hide();
-	this._outline.removeFromDOM();
+	document.body.removeChild(this._outline);
 	undoStack.addState();
 	delete this._selection;
 };
@@ -311,7 +309,9 @@ SelectionTool.prototype.deselectAll = function () {
 	}
 	Utils.clearCanvas(this._preCxt);
 	this._toolbar.hide();
-	this._outline.removeFromDOM();
+	if (document.body.contains(this._outline)) {
+		document.body.removeChild(this._outline);
+	}
 };
 
 /**
@@ -547,10 +547,13 @@ SelectionTool.prototype._updateSelectionOutline = function () {
 	this._toolbar.x = Math.max(-8, zoomedX + 8);
 	this._toolbar.y = Math.max(-56, zoomedY - 52);
 	
-	this._outline.x = zoomedX;
-	this._outline.y = zoomedY;
-	this._outline.width = zoomedWidth;
-	this._outline.height = zoomedHeight;
+	this._outline.style.WebkitTransform =
+		this._outline.style.MozTransform =
+		this._outline.style.MsTransform =
+		this._outline.style.OTransform =
+		this._outline.style.transform = 'translate(' + zoomedX + 'px, ' + zoomedY + 'px)';
+	this._outline.style.width = zoomedWidth + 'px';
+	this._outline.style.height = zoomedHeight + 'px';
 };
 
 /**
