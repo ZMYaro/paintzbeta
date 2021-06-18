@@ -81,4 +81,14 @@ self.addEventListener('fetch', function(ev) {
 			}
 			return fetch(ev.request);
 		}));
+	
+	// Handle any file open request specially.
+	if (ev.request.method === 'POST' && ev.request.url.pathname === '/open-file') {
+		ev.request.formData().then(function (formData) {
+			self.clients.get(ev.resultingClientId || ev.clientId).then(function (client) {
+				var file = formData.get('file');
+				client.postMessage({ file: file, action: 'load-image' });
+			});
+		});
+	}
 });

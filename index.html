@@ -24,6 +24,9 @@
 				navigator.serviceWorker.register('service_worker.js').then(function (registration) {
 					console.log('Registered service worker with scope:', registration.scope);
 				});
+				navigator.serviceWorker.addEventListener('message', function (ev) {
+					openImage(ev.data.file);
+				});
 			} else {
 				// If service worker is unavailable, fall back to app cache.
 				document.addEventListener('DOMContentLoaded', function () {
