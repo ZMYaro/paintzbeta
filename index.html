@@ -25,6 +25,7 @@
 					console.log('Registered service worker with scope:', registration.scope);
 				});
 				navigator.serviceWorker.addEventListener('message', function (ev) {
+					alert('File opened via web share API (work-in-progress).');
 					openImage(ev.data.file);
 				});
 			} else {
