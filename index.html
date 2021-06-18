@@ -25,8 +25,12 @@
 					console.log('Registered service worker with scope:', registration.scope);
 				});
 				navigator.serviceWorker.addEventListener('message', function (ev) {
-					alert('File opened via web share API (work-in-progress).');
-					openImage(ev.data.file);
+					// TODO: Do this better.
+					try {
+						openImage(ev.data.file);
+					} catch (err) {
+						window.sharedFile = ev.data.file;
+					}
 				});
 			} else {
 				// If service worker is unavailable, fall back to app cache.
