@@ -25,7 +25,8 @@
 					console.log('Registered service worker with scope:', registration.scope);
 				});
 				navigator.serviceWorker.addEventListener('message', function (ev) {
-					// TODO: Do this better.
+					// If a new image was sent to be opened, open it.
+					// If this is first load, save it to be fetched during normal initialization.
 					try {
 						openImage(ev.data.file);
 					} catch (err) {
