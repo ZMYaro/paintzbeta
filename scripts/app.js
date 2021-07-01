@@ -64,9 +64,9 @@ function initCanvasContents() {
 	}
 	
 	// If a shared file was received by the service worker, open it.
-	// TODO: Do this better.
 	if (window.sharedFile) {
 		openImage(sharedFile);
+		delete window.sharedFile;
 	}
 	
 	// If the browser supports queuing files to open with the app.
