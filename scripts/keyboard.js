@@ -42,6 +42,22 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			}
 			break;
 		
+		case 33: // PgUp
+			if (ctrlOrCmdOnly) {
+				e.preventDefault();
+				// Ctrl+PgUp => Zoom in
+				zoomManager.zoomIn();
+			}
+			break;
+		
+		case 34: // PgDn
+			if (ctrlOrCmdOnly) {
+				e.preventDefault();
+				// Ctrl+PgDn => Zoom out
+				zoomManager.zoomOut();
+			}
+			break;
+		
 		case 37: // Left arrow
 			if (tools.currentTool instanceof SelectionTool) {
 				if (noModifiers) {
@@ -239,7 +255,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 78: // N
-			if (ctrlOrCmdOnly) {
+			if (ctrlOrCmd && e.shiftKey && !e.altKey && !metaOrControl) {
+				e.preventDefault();
+				// Ctrl+Shift+N => Clear canvas (no confirmation)
+				// TODO: Make this not access ClearDialog private method.
+				dialogs.clear._clear();
+			} else if (ctrlOrCmdOnly) {
 				e.preventDefault();
 				// Ctrl+N => Clear (new image)
 				dialogs.clear.open();
@@ -259,7 +280,11 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 80: // P
-			if (noModifiers) {
+			if (ctrlOrCmdOnly) {
+				e.preventDefault();
+				// Ctrl+P => Print
+				window.print();
+			} else if (noModifiers) {
 				e.preventDefault();
 				// P => Pencil tool
 				tools.switchTool('pencil');
