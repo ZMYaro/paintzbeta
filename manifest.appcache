@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2021-07-06, v1
+# 2021-07-06, v2
 index.html
 404.html
 manifest.webapp
@@ -51,6 +51,7 @@ images/icons/oval.svg
 images/icons/paint_bucket.svg
 images/icons/pan.svg
 images/icons/paste.svg
+images/icons/patreon.svg
 images/icons/pencil.svg
 images/icons/print.svg
 images/icons/rect.svg
@@ -83,6 +84,7 @@ partials/dialogs/color_picker.html
 partials/dialogs/help.html
 partials/dialogs/install.html
 partials/dialogs/keyboard.html
+partials/dialogs/patreon.html
 partials/dialogs/rate.html
 partials/dialogs/resize.html
 partials/dialogs/save.html
@@ -118,6 +120,7 @@ scripts/dialogs/color_picker.js
 scripts/dialogs/help.js
 scripts/dialogs/install.js
 scripts/dialogs/keyboard.js
+scripts/dialogs/patreon.js
 scripts/dialogs/rate.js
 scripts/dialogs/resize.js
 scripts/dialogs/save.js
