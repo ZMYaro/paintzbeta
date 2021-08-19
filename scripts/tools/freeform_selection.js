@@ -20,20 +20,15 @@ FreeformSelectionTool.prototype.constructor = FreeformSelectionTool;
 FreeformSelectionTool.prototype.start = function (pointerState) {
 	this._roundPointerState(pointerState);
 	
-	// Hide the selection toolbar.
+	// Hide the selection toolbar while creating/moving.
 	this._toolbar.hide();
 	
-	// If a selection exists and the pointer is inside it, drag the selection.
-	// Otherwise, start a new selection.
-	if (this._selection &&
-			Utils.isPointInRect(pointerState.x, pointerState.y,
-				this._selection.x, this._selection.y,
-				this._selection.width, this._selection.height)) {
+	if (this._outline.drag) {
 		SelectionTool.prototype.start.call(this, pointerState);
 	} else {
-		// Save any existing selection.
+		// Otherwise, save any existing selection...
 		this._saveSelection();
-		// Start a new selection.
+		// ...and start a new selection.
 		this._selection = {
 			minX: pointerState.x,
 			minY: pointerState.y,
@@ -45,6 +40,8 @@ FreeformSelectionTool.prototype.start = function (pointerState) {
 					y: pointerState.y
 				}
 			],
+			initial: {},
+			content: {},
 			// The fill color should remain the same for this selection even if the PaintZ fill color changes.
 			fillColor: settings.get('fillColor'),
 			firstMove: true,
@@ -65,12 +62,11 @@ FreeformSelectionTool.prototype.move = function (pointerState) {
 	
 	this._roundPointerState(pointerState);
 	
-	// If there is a pointer offset, move the selection.
-	// If there is no pointer offset, then this must be a new selection.
-	if (this._selection.pointerOffset) {
-		this._selection.x = pointerState.x - this._selection.pointerOffset.x;
-		this._selection.y = pointerState.y - this._selection.pointerOffset.y;
+	
+	if (this._outline.drag) {
+		SelectionTool.prototype.move.call(this, pointerState);
 	} else {
+		// If nothing is being dragged, this is a new selection.
 		// Limit the region to the canvas.
 		pointerState.x = Utils.constrainValue(pointerState.x, 0, this._cxt.canvas.width);
 		pointerState.y = Utils.constrainValue(pointerState.y, 0, this._cxt.canvas.height);
@@ -92,9 +88,9 @@ FreeformSelectionTool.prototype.move = function (pointerState) {
 		if (pointerState.y > this._selection.maxY) {
 			this._selection.maxY = pointerState.y;
 		}
+		
+		this._canvasDirty = true;
 	}
-	
-	this._canvasDirty = true;
 };
 
 /**
@@ -106,9 +102,10 @@ FreeformSelectionTool.prototype.update = function () {
 		return;
 	}
 	
-	if (this._selection.pointerOffset) {
+	if (this._outline.drag) {
 		SelectionTool.prototype.update.call(this);
 	} else {
+		// Otherwise, this is a new selection.
 		this._preCxt.save();
 		// Draw the outline.
 		this._preCxt.lineWidth = 1;
@@ -149,50 +146,59 @@ FreeformSelectionTool.prototype.end = function (pointerState) {
 	
 	this._preCxt.canvas.style.cursor = 'crosshair';
 	
-	// If there is a pointer offset, remove it.
-	// If a new selection was created, ensure it is valid.
-	if (this._selection.pointerOffset) {
-		delete this._selection.pointerOffset;
+	if (this._outline.drag) {
+		// If there is outline drag data, tell the floating region to
+		// finish, and then update the image data.
+		this._outline.handleDragEnd(pointerState);
+		this._updateSelectionContentToOutline();
 	} else {
-		// If there are < 3 points, the selection is invalid.
+		// Otherwise, a new selection was created.
+		
 		if (this._selection.points.length < 3) {
+			// If there are < 3 points, the selection is invalid.
 			this.deselectAll();
 			return;
 		}
 		
 		// Update the coordinates to the top-left corner of the selection region.
-		this._selection.startX =
-			this._selection.x = this._selection.minX;
-		this._selection.startY =
-			this._selection.y = this._selection.minY;
-		this._selection.width = this._selection.maxX - this._selection.minX;
-		this._selection.height = this._selection.maxY - this._selection.minY;
+		this._selection.initial.x =
+			this._selection.content.x = this._selection.minX;
+		this._selection.initial.y =
+			this._selection.content.y = this._selection.minY;
+		this._selection.initial.width =
+			this._selection.content.width = this._selection.maxX - this._selection.minX;
+		this._selection.initial.height = 
+			this._selection.content.height = this._selection.maxY - this._selection.minY;
 		
-		// If either dimension is zero, the selection is invalid.
-		if (this._selection.width === 0 || this._selection.height === 0) {
+		if (this._selection.content.width === 0 || this._selection.content.height === 0) {
+			// If either dimension of the bounding box is zero, the selection is invalid.
 			this.deselectAll();
 			return;
 		}
 		
 		// Get the image data within the selections bounding rectangle.
 		var unmaskedSelectionContent = this._cxt.getImageData(
-			this._selection.startX, this._selection.startY,
-			this._selection.width, this._selection.height);
+			this._selection.content.x, this._selection.content.y,
+			this._selection.content.width, this._selection.content.height);
 		
 		// Save the selected content using the selection start cover function to cut it to the freeform shape.
-		this._selection.opaqueContent = this._maskToSelectionPath(unmaskedSelectionContent);
+		this._selection.content.opaqueData = this._maskToSelectionPath(unmaskedSelectionContent);
 		
 		// Make the selection transparent if the setting is enabled.
-		// This creates _selection.content whether or not transparency is enabled.
+		// This creates `this._selection.content.data` whether or not transparency is enabled.
 		this.setTransparentBackground();
 		
 		// Add the outline.
-		this._updateSelectionOutline();
-		document.body.appendChild(this._outline);
+		this._updateSelectionUI();
+		this._outline.addToDOM();
 	}
 	
-	// Show the selection toolbar if there is an active selection.
+	// Redraw the selection one last time.
+	this.redrawSelection();
+	
 	if (this._selection) {
+		// Show resize handles and selection toolbar once done creating/moving if there is an active selection.
+		this._outline.showHandles = true;
 		this._toolbar.show();
 	}
 };
@@ -233,7 +239,7 @@ FreeformSelectionTool.prototype._maskToSelectionPath = function (imageData) {
 	Utils.clearCanvas(this._preCxt);
 	this._preCxt.save();
 	// Put the unmasked image data in the canvas.
-	this._preCxt.putImageData(imageData, this._selection.startX, this._selection.startY);
+	this._preCxt.putImageData(imageData, this._selection.initial.x, this._selection.initial.y);
 	// Draw the selection shape with destination-in mode to remove all image data outside it.
 	this._preCxt.globalCompositeOperation = 'destination-in';
 	this._drawSelectionStartCover();
@@ -241,6 +247,6 @@ FreeformSelectionTool.prototype._maskToSelectionPath = function (imageData) {
 	
 	// Grab the selection region from the canvas now that it has been masked.
 	return this._preCxt.getImageData(
-		this._selection.startX, this._selection.startY,
-		this._selection.width, this._selection.height);
+		this._selection.initial.x, this._selection.initial.y,
+		this._selection.content.width, this._selection.content.height);
 }
