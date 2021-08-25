@@ -159,6 +159,9 @@ SelectionTool.prototype.update = function () {
 	if (!this._canvasDirty) {
 		return;
 	}
+	if (!this._selection) {
+		return;
+	}
 	
 	this.redrawSelection();
 	
@@ -171,16 +174,21 @@ SelectionTool.prototype.update = function () {
  * @param {Object} pointerState - The pointer coordinates
  */
 SelectionTool.prototype.end = function (pointerState) {
+	
+	this._preCxt.canvas.style.cursor = 'crosshair';
+	
+	if (!this._selection) {
+		return;
+	}
+	
 	this._roundPointerState(pointerState);
 	
 	this.move(pointerState);
 	
-	this._preCxt.canvas.style.cursor = 'crosshair';
-	
 	if (this._outline.drag) {
 		// If there is outline drag data, tell the floating region to
 		// finish, and then update the image data.
-		this._outline.handleDragEnd(pointerState);
+		this._outline.handleDragEnd();
 		this._updateSelectionContentToOutline();
 		this._outline.show();
 	} else {
@@ -247,13 +255,10 @@ SelectionTool.prototype.clear = function () {
 		this._drawSelectionStartCover();
 		this._cxt.drawImage(this._preCxt.canvas, 0, 0);
 	}
-	Utils.clearCanvas(this._preCxt);
 	
-	// Delete the selection.
-	this._toolbar.hide();
-	this._outline.removeFromDOM();
+	this.deselectAll();
+	
 	undoStack.addState();
-	delete this._selection;
 };
 
 /**
@@ -568,6 +573,9 @@ SelectionTool.prototype.rotate = function (clockwise) {
 		// Save the new width and height.
 		settings.set('width', oldCanvasHeight);
 		settings.set('height', oldCanvasWidth);
+		
+		// Clear the precanvas.
+		Utils.clearCanvas(preCxt);
 	}
 };
 
@@ -745,7 +753,8 @@ SelectionTool.prototype._saveSelection = function () {
 	Utils.clearCanvas(this._preCxt);
 	
 	var selectionExistsAndWasTransformed = (
-		this._selection && (
+		this._selection &&
+		this._selection.content.data && (
 			this._selection.transformed ||
 			this._selection.content.x !== this._selection.initial.x ||
 			this._selection.content.y !== this._selection.initial.y));

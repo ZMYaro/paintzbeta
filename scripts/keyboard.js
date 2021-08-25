@@ -8,6 +8,8 @@ function KeyManager() {
 	this.enabled = false;
 	
 	window.addEventListener('keydown', this._handleKeyDown.bind(this), false);
+	document.getElementById('dialogsContainer')
+		.addEventListener('keydown', this._handleDialogKeyDown.bind(this), false);
 }
 
 KeyManager.prototype._handleKeyDown = function (e) {
@@ -346,6 +348,13 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			}
 			break;
 		
+		case 86: // V
+			if(ctrlOrCmd && e.altKey && !e.shiftKey && !metaOrControl) {
+				e.preventDefault();
+				// Ctrl+Alt+V => Paste from...
+				document.getElementById('pasteFrom').click();
+			}
+		
 		case 88: // X
 			if (noModifiers) {
 				e.preventDefault();
@@ -431,6 +440,43 @@ KeyManager.prototype._handleKeyDown = function (e) {
 					settings.set('lineWidth',
 						lineWidthSelect.value = lineWidthSelect.options[lineWidthSelect.selectedIndex + 1].value);
 				}
+			}
+			break;
+	}
+};
+
+KeyManager.prototype._handleDialogKeyDown = function (e) {
+	// Use Command on Mac and iOS devices and Ctrl everywhere else.
+	var ctrlOrCmd = Utils.checkPlatformCtrlOrCmdKey(e),
+		metaOrControl = Utils.checkPlatformMetaOrControlKey(e),
+		ctrlOrCmdOnly = ctrlOrCmd && !e.altKey && !e.shiftKey && !metaOrControl;
+	
+	switch (e.keyCode) {
+		case 78: // N
+			if (ctrlOrCmd && e.shiftKey && !e.altKey && !metaOrControl) {
+				// Ctrl+Shift+N => Prevent new incognito window (Chrome)
+				e.preventDefault();
+				e.stopPropagation();
+			} else if (ctrlOrCmdOnly) {
+				// Ctrl+N => Prevent new window
+				e.preventDefault();
+				e.stopPropagation();
+			}
+			break;
+		
+		case 79: // O
+			if (ctrlOrCmdOnly) {
+				// Ctrl+O => Prevent open file
+				e.preventDefault();
+				e.stopPropagation();
+			}
+			break;
+		
+		case 83: // S
+			if (ctrlOrCmdOnly) {
+				// Ctrl+S => Prevent save page as
+				e.preventDefault();
+				e.stopPropagation();
 			}
 			break;
 	}

@@ -3,7 +3,7 @@
 // Constants.
 var PNG_REGEX = (/.+\.png$/i),
 	JPEG_REGEX = (/.+\.(jpg|jpeg|jpe|jif|jfif|jfi)$/i),
-	FILE_EXT_REGEX = (/\.[a-z0-9]{1,4}$/i),
+	FILE_EXT_REGEX = (/\.[a-z0-9]{0,4}$/i),
 	DEFAULT_TITLE = 'untitled.png',
 	PAGE_TITLE_SUFFIX = ' - Paintβ';
 
@@ -139,6 +139,10 @@ function openImage(file) {
 	// Show the progress spinner until the image loads.
 	progressSpinner.show();
 	
+	// Deactivate and reactivate the current tool in case it is being used.
+	tools.currentTool.deactivate();
+	tools.currentTool.activate();
+	
 	Utils.readImage(file).then(function (image) {
 		// There is no need to clear the canvas.  Resizing the canvas will do that.
 		canvas.width =
@@ -178,31 +182,6 @@ function openImage(file) {
 		// Hide the progress spinner.
 		progressSpinner.hide();
 	});
-}
-
-/**
- * Fix the extension on a file name to match a MIME type.
- * @param {String} name - The file name to fix
- * @param {String} type - The MIME type to match (JPEG or PNG)
- * @returns {String} - The modified file name
- */
-function fixExtension(name, type) {
-	name = name.trim();
-	
-	if (type === 'image/png' && !PNG_REGEX.test(name)) {
-		if (FILE_EXT_REGEX.test(name)) {
-			return name.replace(FILE_EXT_REGEX, '.png');
-		} else {
-			return name + '.png';
-		}
-	} else if (type === 'image/jpeg' && !JPEG_REGEX.test(name)) {
-		if (FILE_EXT_REGEX.test(name)) {
-			return name.replace(FILE_EXT_REGEX, '.jpg');
-		} else {
-			return name + '.jpg';
-		}
-	}
-	return name;
 }
 
 /**
