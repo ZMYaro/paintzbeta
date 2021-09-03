@@ -12,7 +12,7 @@ function ClipboardManager() {
 		if (!this.enabled) {
 			return;
 		}
-		if (tools.currentTool !== tools.selection && tools.currentTool !== tools.freeformSelection) {
+		if (!(tools.currentTool instanceof SelectionTool)) {
 			return;
 		}
 		
@@ -23,7 +23,7 @@ function ClipboardManager() {
 		if (!this.enabled) {
 			return;
 		}
-		if (tools.currentTool !== tools.selection && tools.currentTool !== tools.freeformSelection) {
+		if (!(tools.currentTool instanceof SelectionTool)) {
 			return;
 		}
 		
@@ -66,7 +66,9 @@ ClipboardManager.prototype._handlePaste = function (e) {
  */
 ClipboardManager.prototype.triggerPaste = function () {
 	if (!navigator.clipboard || !navigator.clipboard.read) {
-		return false;
+		// If the browser does not support the clipboard API, fall back
+		// to `document.execCommand`; if that fails, it will return false.
+		return document.execCommand('paste');
 	}
 	
 	var that = this;

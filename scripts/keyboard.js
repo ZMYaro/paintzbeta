@@ -34,12 +34,27 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			}
 			break;
 		
+		case 13: // Enter
+			if (ctrlOrCmdOnly) {
+				if (tools.currentTool === tools.text) {
+					e.preventDefault();
+					// Ctrl+Enter => Rasterize text
+					tools.currentTool._removeTextElem();
+				}
+			}
+			break;
+		
 		case 27: // Esc
 			if (noModifiers) {
 				if (tools.currentTool instanceof SelectionTool) {
 					e.preventDefault();
 					// Esc => Drop/cancel selection
 					tools.currentTool.deactivate();
+				} else if (tools.currentTool === tools.text) {
+					e.preventDefault();
+					// Esc => Cancel text box
+					tools.currentTool._textArea.innerHTML = '';
+					tools.currentTool._removeTextElem();
 				}
 			}
 			break;
@@ -180,7 +195,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 67: // C
-			if (noModifiers) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+C => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('C')) {
+					e.preventDefault();
+				}
+			} else if (noModifiers) {
 				e.preventDefault();
 				// C => Curve tool
 				tools.switchTool('curve');
@@ -199,7 +219,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 69: // E
-			if (noModifiers) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+E => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('E')) {
+					e.preventDefault();
+				}
+			} else if (noModifiers) {
 				e.preventDefault();
 				// E => Eraser tool
 				tools.switchTool('eraser');
@@ -207,7 +232,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 70: // F
-			if (noModifiers) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+F => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('F')) {
+					e.preventDefault();
+				}
+			} else if (noModifiers) {
 				e.preventDefault();
 				// F => Freeform selection tool
 				tools.switchTool('freeformSelection');
@@ -220,9 +250,15 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				// Ctrl+G => Toggle grid
 				settings.set('grid', !settings.get('grid'));
 			}
+			break;
 		
 		case 72: // H
-			if (noModifiers) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+H => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('H')) {
+					e.preventDefault();
+				}
+			} else if (noModifiers) {
 				e.preventDefault();
 				// H => Pan (hand) tool
 				tools.switchTool('pan');
@@ -230,7 +266,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 73: // I
-			if (ctrlOrCmdOnly) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+I => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('I')) {
+					e.preventDefault();
+				}
+			} else if (ctrlOrCmdOnly) {
 				e.preventDefault();
 				
 				if (settings.get('tool') === 'text') {
@@ -349,10 +390,15 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 86: // V
-			if(ctrlOrCmd && e.altKey && !e.shiftKey && !metaOrControl) {
+			if (ctrlOrCmd && e.altKey && !e.shiftKey && !metaOrControl) {
 				e.preventDefault();
 				// Ctrl+Alt+V => Paste from...
 				document.getElementById('pasteFrom').click();
+			} else if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+V => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('V')) {
+					e.preventDefault();
+				}
 			}
 		
 		case 88: // X

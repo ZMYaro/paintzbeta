@@ -75,6 +75,9 @@ ImageToolbox.prototype._setUp = function (contents) {
 		var file = e.target.files[0];
 		Utils.readImage(file).then(function (image) {
 			clipboard.paste(image);
+			// Clear the input so it registers as changed if the next
+			// selected has the same file name as the last.
+			e.target.value = null;
 		});
 	}, false);
 	pasteBtn.addEventListener('click', function (e) {
@@ -84,7 +87,7 @@ ImageToolbox.prototype._setUp = function (contents) {
 			pasteFromInput.click();
 			return;
 		}
-		if (!clipboard.triggerPaste() && !document.execCommand('paste')) {
+		if (!clipboard.triggerPaste()) {
 			alert('For now, you need to use ' + (Utils.isApple ? '\u2318' : 'Ctrl+') + 'V to paste an image into PaintZ.');
 		}
 	}, false);
@@ -102,4 +105,7 @@ ImageToolbox.prototype._setUp = function (contents) {
 ImageToolbox.prototype._handleFileUpload = function (e) {
 	var file = e.target.files[0];
 	openImage(file);
+	// Clear the input so it registers as changed if the next
+	// selected has the same file name as the last.
+	e.target.value = null;
 };

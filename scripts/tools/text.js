@@ -17,7 +17,7 @@ function TextTool(cxt, preCxt) {
 	this._textArea.className = 'textArea';
 	this._textArea.style.lineHeight = this.LINE_HEIGHT;
 	this._textArea.style.padding = this.PADDING + 'px';
-	this._outline.elem.appendChild(this._textArea);
+	this._outline.element.appendChild(this._textArea);
 	
 	// Prevent selecting text moving the text box.
 	this._textArea.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
@@ -110,8 +110,6 @@ TextTool.prototype.start = function (pointerState) {
 		}
 		that.pasting = false;
 	}, false);
-	
-	keyManager.enabled = false;
 };
 
 /**
@@ -193,7 +191,7 @@ TextTool.prototype.end = function (pointerState) {
 	
 	this.move(pointerState);
 	
-	this._textArea.style.cursor = null;
+	this._textArea.style.removeProperty('cursor');
 	this._preCxt.canvas.style.cursor = 'crosshair';
 	
 	if (this._outline.drag) {
@@ -269,7 +267,7 @@ TextTool.prototype.updateTextElem = function () {
 	this._outline.width = this._outline.width;
 	this._outline.height = this._outline.height;
 	
-	this._outline.elem.style.background = this._getBackgroundValue();
+	this._outline.element.style.background = this._getBackgroundValue();
 	this._textArea.style.width = this._outline.width + 'px';
 	this._textArea.style.height = this._outline.height + 'px';
 	this._textArea.style.WebkitTransform = 'scale(' + zoomManager.level + ')';
@@ -292,7 +290,6 @@ TextTool.prototype._removeTextElem = function () {
 		// Remove the text region and element.
 		this._textBoxActive = false;
 		this._outline.removeFromDOM();
-		keyManager.enabled = true;
 	}).bind(this));
 };
 
@@ -372,16 +369,18 @@ TextTool.prototype._handleKeyDown = function (e) {
 		ctrlOrCmdOnly = ctrlOrCmd && !e.altKey && !e.shiftKey && !metaOrControl,
 		noModifiers = !Utils.checkModifierKeys(e);
 	
+	e.stopPropagation();
+	
 	switch (e.keyCode) {
 		case 13: // Enter
 			if (ctrlOrCmdOnly) {
 				e.preventDefault();
 				// Ctrl+Enter => Rasterize text
 				
-				this._saveText();
 				this._removeTextElem();
 			}
 			break;
+		
 		case 27: // Esc
 			if (noModifiers) {
 				e.preventDefault();
@@ -428,8 +427,49 @@ TextTool.prototype._handleKeyDown = function (e) {
 			}
 			break;
 		
+		case 67: // C
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+C => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('C')) {
+					e.preventDefault();
+				}
+			}
+			break;
+		
+		case 69: // E
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+E => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('E')) {
+					e.preventDefault();
+				}
+			}
+			break;
+		
+		case 70: // F
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+F => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('F')) {
+					e.preventDefault();
+				}
+			}
+			break;
+		
+		case 72: // H
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+H => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('H')) {
+					e.preventDefault();
+				}
+			}
+			break;
+		
 		case 73: // I
-			if (ctrlOrCmdOnly) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+I => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('I')) {
+					e.preventDefault();
+				}
+			} else if (ctrlOrCmdOnly) {
 				e.preventDefault();
 				// Ctrl+I => Italic
 				
@@ -481,6 +521,18 @@ TextTool.prototype._handleKeyDown = function (e) {
 				settings.set('underline', toolbar.toolboxes.textToolOptions.underlineToggle.checked);
 			}
 			break;
+		
+		case 86: // V
+			if (ctrlOrCmd && e.altKey && !e.shiftKey && !metaOrControl) {
+				e.preventDefault();
+				// Ctrl+Alt+V => Paste from...
+				document.getElementById('pasteFrom').click();
+			} else if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+V => Begin classic MS Paint access key sequence
+				if (dialogs.classicAccessKey.open('V')) {
+					e.preventDefault();
+				}
+			}
 		
 		case 112: // F1
 			if (noModifiers) {
