@@ -156,9 +156,8 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				// Alt+Shift+5 => Strikethrough
 				
 				if (settings.get('tool') === 'text') {
-					toolbar.toolboxes.textToolOptions.strikeToggle.checked =
-						!toolbar.toolboxes.textToolOptions.strikeToggle.checked;
-					settings.set('strike', toolbar.toolboxes.textToolOptions.strikeToggle.checked);
+					settings.set('strike', !settings.get('strike'));
+					toolbar.toolboxes.textToolOptions.strikeToggle.checked = settings.get('strike');
 				}
 			}
 			break;
@@ -183,9 +182,8 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				// Ctrl+B => Bold
 				
 				if (settings.get('tool') === 'text') {
-					toolbar.toolboxes.textToolOptions.boldToggle.checked =
-						!toolbar.toolboxes.textToolOptions.boldToggle.checked;
-					settings.set('bold', toolbar.toolboxes.textToolOptions.boldToggle.checked);
+					settings.set('bold', !settings.get('bold'));
+					toolbar.toolboxes.textToolOptions.boldToggle.checked = settings.get('bold');
 				}
 			} else if (noModifiers) {
 				e.preventDefault();
@@ -196,7 +194,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 		
 		case 67: // C
 			if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+C => Begin classic MS Paint access key sequence
+				// Alt+C => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('C')) {
 					e.preventDefault();
 				}
@@ -220,10 +218,14 @@ KeyManager.prototype._handleKeyDown = function (e) {
 		
 		case 69: // E
 			if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+E => Begin classic MS Paint access key sequence
+				// Alt+E => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('E')) {
 					e.preventDefault();
 				}
+			} else if (ctrlOrCmdOnly) {
+				e.preventDefault();
+				// Ctrl+E => Resize dialog
+				dialogs.resize.open();
 			} else if (noModifiers) {
 				e.preventDefault();
 				// E => Eraser tool
@@ -233,7 +235,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 		
 		case 70: // F
 			if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+F => Begin classic MS Paint access key sequence
+				// Alt+F => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('F')) {
 					e.preventDefault();
 				}
@@ -254,7 +256,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 		
 		case 72: // H
 			if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+H => Begin classic MS Paint access key sequence
+				// Alt+H => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('H')) {
 					e.preventDefault();
 				}
@@ -267,7 +269,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 		
 		case 73: // I
 			if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+I => Begin classic MS Paint access key sequence
+				// Alt+I => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('I')) {
 					e.preventDefault();
 				}
@@ -276,9 +278,8 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				
 				if (settings.get('tool') === 'text') {
 					// Ctrl+I => Italic (text tool)
-					toolbar.toolboxes.textToolOptions.italicToggle.checked =
-						!toolbar.toolboxes.textToolOptions.italicToggle.checked;
-					settings.set('italic', toolbar.toolboxes.textToolOptions.italicToggle.checked);
+					settings.set('italic', !settings.get('italic'));
+					toolbar.toolboxes.textToolOptions.italicToggle.checked = settings.get('italic');
 				} else {
 					// Ctrl+I => Invert colors
 					if (tools.currentTool instanceof SelectionTool) {
@@ -369,7 +370,12 @@ KeyManager.prototype._handleKeyDown = function (e) {
 			break;
 		
 		case 84: // T
-			if (noModifiers) {
+			if (e.altKey && !e.ctrlKey && !e.metaKey) {
+				// Alt+T => Begin MS Paint access key sequence
+				if (dialogs.msAccessKey.open('T')) {
+					e.preventDefault();
+				}
+			} else if (noModifiers) {
 				e.preventDefault();
 				// T => Text tool
 				tools.switchTool('text');
@@ -382,9 +388,8 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				// Ctrl+U => Underline
 				
 				if (settings.get('tool') === 'text') {
-					toolbar.toolboxes.textToolOptions.underlineToggle.checked =
-						!toolbar.toolboxes.textToolOptions.underlineToggle.checked;
-					settings.set('underline', toolbar.toolboxes.textToolOptions.underlineToggle.checked);
+					settings.set('underline', !settings.get('underline'));
+					toolbar.toolboxes.textToolOptions.underlineToggle.checked = settings.get('underline');
 				}
 			}
 			break;
@@ -395,7 +400,7 @@ KeyManager.prototype._handleKeyDown = function (e) {
 				// Ctrl+Alt+V => Paste from...
 				document.getElementById('pasteFrom').click();
 			} else if (e.altKey && !e.ctrlKey && !e.metaKey) {
-				// Alt+V => Begin classic MS Paint access key sequence
+				// Alt+V => Begin MS Paint access key sequence
 				if (dialogs.msAccessKey.open('V')) {
 					e.preventDefault();
 				}
