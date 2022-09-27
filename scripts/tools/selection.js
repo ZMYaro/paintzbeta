@@ -334,7 +334,6 @@ SelectionTool.prototype.duplicate = function () {
  */
 SelectionTool.prototype.selectAll = function (width, height) {
 	this.start({x: 0, y: 0});
-	this.move({x: width, y: height});
 	this.end({x: width, y: height});
 	this._updateSelectionUI();
 };
