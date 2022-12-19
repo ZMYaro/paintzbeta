@@ -124,7 +124,7 @@ TextTool.prototype.move = function (pointerState) {
 	
 	this._roundPointerState(pointerState);
 	
-	Utils.clearCanvas(this._preCxt);
+	this._preCxt.reset();
 	
 	if (this._outline.drag) {
 		this._outline.handleDragMove(pointerState);
@@ -272,8 +272,8 @@ TextTool.prototype.updateTextElem = function () {
 	this._textArea.style.height = this._outline.height + 'px';
 	this._textArea.style.WebkitTransform = 'scale(' + zoomManager.level + ')';
 	this._textArea.style.MozTransform =    'scale(' + zoomManager.level + ')';
-	this._textArea.style.MsTransform =     'scale(' + zoomManager.level + ')';
-	this._textArea.style.OTransform =      'scale(' + zoomManager.level + ')';
+	this._textArea.style.MsTransform =    'scale(' + zoomManager.level + ')';
+	this._textArea.style.OTransform =    'scale(' + zoomManager.level + ')';
 	this._textArea.style.transform =       'scale(' + zoomManager.level + ')';
 	this._textArea.style.color = settings.get('lineColor');
 	this._textArea.style.font = this._getFontValue();
@@ -318,9 +318,9 @@ TextTool.prototype._saveText = function () {
 							'width: ' + this._outline.width + 'px; ' +
 							'height: ' + this._outline.height + 'px; ' +
 							'background: ' + this._getBackgroundValue() + '; ' +
-							'color: ' + settings.get('lineColor') + '; ' +
 							'font: ' + this._getFontValue() + '; ' +
-							'text-decoration: ' + this._getTextDecorationValue() + ';">' +
+							'text-decoration: ' + this._getTextDecorationValue() + '; ' +
+							'color: ' + settings.get('lineColor') + ';">' +
 						this._textArea.innerHTML +
 					'</p>' +
 				'</foreignObject>' +
@@ -347,7 +347,7 @@ TextTool.prototype._saveText = function () {
 			// Revoke the temporary blob URL.
 			//URL.revokeObjectURL(svgURL);
 			// Clean up.
-			Utils.clearCanvas(this._preCxt);
+			this._preCxt.reset();
 			undoStack.addState();
 			
 			resolve(true);

@@ -118,7 +118,7 @@ ClipboardManager.prototype.paste = function (image) {
 	tools.selection.end({ x: pasteRightX, y: pasteBottomY });
 	
 	// Set the selection content to the pasted image.
-	Utils.clearCanvas(preCxt);
+	preCxt.reset();
 	preCxt.drawImage(image, pasteX, pasteY);
 	tools.selection._selection.content.opaqueData = preCxt.getImageData(pasteX, pasteY, image.width, image.height);
 	
@@ -144,7 +144,7 @@ ClipboardManager.prototype.paste = function (image) {
  */
 ClipboardManager.prototype.copy = function (imageBlob) {
 	if (!navigator.clipboard || !navigator.clipboard.write) {
-		alert(this.CLIPBOARD_UNSUPPORTED);
+		alert(this.CLIPBOARD_UNSUPPORTED_MESSAGE);
 		return false;
 	}
 	
