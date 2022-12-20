@@ -50,18 +50,19 @@ SelectionTool.prototype.start = function (pointerState) {
 	
 	if (this._outline.drag) {
 		// If the selection is being dragged, handle that.
-		if (pointerState.ctrlKey) {
-			// If the Ctrl key is pressed, save a copy of the selection.
-			this._saveSelection();
-			this._selection.firstMove = false;
-		} else if (pointerState.shiftKey) {
-			// If the Shift key is pressed without the Ctrl key, use trail mode.
-			this._trailMode = true;
-		}
 		if (this._outline.drag.type === 'move') {
 			// Hide the outline while moving.
 			this._outline.hide();
 			this._preCxt.canvas.style.cursor = 'move';
+			
+			if (pointerState.ctrlKey) {
+				// If the Ctrl key is pressed, save a copy of the selection.
+				this._saveSelection();
+				this._selection.firstMove = false;
+			} else if (pointerState.shiftKey) {
+				// If the Shift key is pressed without the Ctrl key, use trail mode.
+				this._trailMode = true;
+			}
 		} else {
 			this._preCxt.canvas.style.cursor = this._outline.drag.type + '-resize';
 		}
@@ -134,8 +135,8 @@ SelectionTool.prototype.move = function (pointerState) {
 			this._selection.initial.height = Math.abs(this._selection.initial.height);
 		}
 		
-		// Perfect square when shift key held.
 		if (pointerState.shiftKey) {
+			// Perfect square when Shift is held.
 			if (this._selection.initial.width < this._selection.initial.height) {
 				this._selection.initial.height = this._selection.initial.width;
 				if (this._selection.initial.y === pointerState.y) {
